@@ -28,8 +28,14 @@
         </div>
         <div id="nav-controls" class="hidden p-4 border-t border-gray-100">
             <div class="flex justify-between items-center">
-                <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                <!-- 홈 버튼이 포함된 왼쪽 영역 -->
+                <div class="flex flex-col gap-1">
+                    <button onclick="location.reload()" class="text-[10px] text-gray-400 hover:text-blue-500 font-bold underline transition text-left">처음으로</button>
+                    <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                </div>
+                
                 <span id="progress" class="text-gray-400 font-bold text-sm">1 / 25</span>
+                
                 <button onclick="nextQuestion()" id="next-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">다음</button>
             </div>
         </div>
