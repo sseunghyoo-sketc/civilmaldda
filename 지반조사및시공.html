@@ -15,20 +15,28 @@
 </head>
 <body class="bg-gray-100 h-full overflow-hidden flex items-center justify-center p-2">
     <div class="w-full max-w-sm h-full max-h-[700px] bg-white rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
+        
+        <!-- 홈 버튼(🏠)이 포함된 헤더 -->
         <div class="relative p-4 text-center border-b border-gray-50">
             <a href="index.html" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-100 transition">🏠</a>
             <h1 class="text-lg font-bold text-gray-800">지반조사 및 시공 마스터</h1>
         </div>
+
         <div id="quiz-viewport" class="flex-1 p-5 overflow-y-auto slide-enter">
             <div id="start-screen" class="flex flex-col items-center justify-center h-full text-center space-y-6">
-                <div><div class="text-6xl mb-4">🔍</div><h2 class="text-2xl font-bold text-gray-800 mb-1">토목기사 실기 대비</h2><p class="text-gray-500 text-sm">지반조사 및 시공 25문제 학습하기</p></div>
+                <div>
+                    <div class="text-6xl mb-4">🔍</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1">토목기사 실기 대비</h2>
+                    <p class="text-gray-500 text-sm">지반조사 및 시공 25문제 학습하기</p>
+                </div>
                 <button onclick="startQuiz()" class="w-3/4 bg-blue-500 text-white py-4 rounded-2xl hover:bg-blue-600 transition font-bold shadow-lg active:scale-95">퀴즈 시작하기</button>
                 <p id="daily-quote" class="text-gray-400 italic text-xs font-medium leading-relaxed max-w-[250px]"></p>
             </div>
         </div>
+
         <div id="nav-controls" class="hidden p-4 border-t border-gray-100">
             <div class="flex justify-between items-center">
-                <!-- 홈 버튼이 포함된 왼쪽 영역 -->
+                <!-- 홈 버튼 및 이전 버튼 영역 -->
                 <div class="flex flex-col gap-1">
                     <button onclick="location.reload()" class="text-[10px] text-gray-400 hover:text-blue-500 font-bold underline transition text-left">처음으로</button>
                     <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
@@ -68,12 +76,13 @@
             { id: 24, q: "말뚝상부/하부 재질이 다른 파일(SPC)은?", o: ["선단부 고강도/상부 일반", "상부 고강도/선단부 일반", "전부 동일", "철재", "목재"], ans: [0], exp: "선단부 지지력 좋은 재질/상부 경제적 재질 복합 사용" },
             { id: 25, q: "사운딩시험의 공통적 목적은?", o: ["지반 지지력 추정", "투수계수 측정", "지하수위 측정", "다짐 에너지 측정", "전단강도 측정"], ans: [0, 4], exp: "지반의 지지력 및 전단강도 추정" }
         ];
+        
         let currentIndex = 0;
         function shuffle(array) { let curr = array.length, randomIndex; while (curr != 0) { randomIndex = Math.floor(Math.random() * curr); curr--; [array[curr], array[randomIndex]] = [array[randomIndex], array[curr]]; } return array; }
         quizData.forEach(q => { let items = q.o.map((text, idx) => ({ text, isAns: q.ans.includes(idx) })); items = shuffle(items); q.shuffledOptions = items.map(item => item.text); q.shuffledAns = []; items.forEach((item, idx) => { if (item.isAns) q.shuffledAns.push(idx); }); });
         window.onload = () => { const quoteEl = document.getElementById('daily-quote'); if(quoteEl) quoteEl.innerText = `❝ ${["정확한 지반 조사가 견고한 구조물을 만듭니다.", "토목의 시작은 땅을 읽는 것에서부터입니다.", "기초가 흔들리면 전체가 무너집니다.", "철저한 시공 관리만이 안전을 보장합니다.", "데이터 기반의 판단이 공학자의 자질입니다."][Math.floor(Math.random() * 5)]} ❞`; };
         function startQuiz() { document.getElementById('start-screen').classList.add('hidden'); document.getElementById('nav-controls').classList.remove('hidden'); renderCurrentQuestion(); }
-        function renderCurrentQuestion() { const q = quizData[currentIndex]; const viewport = document.getElementById('quiz-viewport'); document.getElementById('progress').innerText = `${currentIndex + 1} / ${quizData.length}`; document.getElementById('prev-btn').disabled = currentIndex === 0; document.getElementById('next-btn').disabled = currentIndex === quizData.length - 1; viewport.innerHTML = `<h3 class="text-gray-800 font-bold mb-4 text-base leading-snug">${currentIndex + 1}. ${q.q}</h3><div id="options-container" class="space-y-2">${q.shuffledOptions.map((opt, idx) => `<label class="flex items-center p-3 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition active:bg-gray-100"><input type="checkbox" data-idx="${idx}" class="w-5 h-5 text-indigo-600 rounded-md border-gray-300 mr-3"><span class="text-gray-700 text-sm font-medium">${opt}</span></label>`).join('')}</div><button onclick="toggleAnswer()" class="mt-5 w-full bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600 transition font-bold shadow-md active:scale-95 text-sm">정답 확인</button><div id="expl-container" class="hidden mt-4 p-3 bg-blue-50 text-blue-900 rounded-xl text-xs border border-blue-100 leading-relaxed"><strong>💡 정답 핵심 요약:</strong><br>${q.exp}</div>`; }
+        function renderCurrentQuestion() { const q = quizData[currentIndex]; const viewport = document.getElementById('quiz-viewport'); document.getElementById('progress').innerText = `${currentIndex + 1} / ${quizData.length}`; document.getElementById('prev-btn').disabled = currentIndex === 0; document.getElementById('next-btn').disabled = currentIndex === quizData.length - 1; viewport.innerHTML = `<h3 class="text-gray-800 font-bold mb-4 text-base leading-snug">${currentIndex + 1}. ${q.q}</h3><div id="options-container" class="space-y-2">${q.shuffledOptions.map((opt, idx) => `<label class="flex items-center p-3 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition active:bg-gray-100"><input type="checkbox" data-idx="${idx}" class="w-5 h-5 text-blue-600 rounded-md border-gray-300 mr-3"><span class="text-gray-700 text-sm font-medium">${opt}</span></label>`).join('')}</div><button onclick="toggleAnswer()" class="mt-5 w-full bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600 transition font-bold shadow-md active:scale-95 text-sm">정답 확인</button><div id="expl-container" class="hidden mt-4 p-3 bg-blue-50 text-blue-900 rounded-xl text-xs border border-blue-100 leading-relaxed"><strong>💡 정답 핵심 요약:</strong><br>${q.exp}</div>`; }
         function toggleAnswer() { const q = quizData[currentIndex]; const container = document.getElementById('options-container'); const checkboxes = container.querySelectorAll('input'); const expl = document.getElementById('expl-container'); if (!expl.classList.contains('hidden')) { expl.classList.add('hidden'); checkboxes.forEach(cb => { cb.checked = false; cb.parentElement.classList.remove('correct-border', 'incorrect-border'); cb.parentElement.classList.add('border-gray-100'); }); return; } checkboxes.forEach((cb) => { const idx = parseInt(cb.getAttribute('data-idx')); cb.parentElement.classList.remove('correct-border', 'incorrect-border'); if (q.shuffledAns.includes(idx)) { cb.parentElement.classList.add('correct-border'); } else if (cb.checked && !q.shuffledAns.includes(idx)) { cb.parentElement.classList.add('incorrect-border'); } }); expl.classList.remove('hidden'); }
         function prevQuestion() { if(currentIndex > 0) { currentIndex--; renderCurrentQuestion(); } }
         function nextQuestion() { if(currentIndex < quizData.length - 1) { currentIndex++; renderCurrentQuestion(); } }
