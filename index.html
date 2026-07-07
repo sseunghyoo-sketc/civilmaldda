@@ -7,21 +7,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        /* 건설 일러스트 느낌의 배경 */
         .bg-construction {
-            background-image: url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80');
-            background-size: cover;
-            background-position: center;
+            background-color: #f3f4f6;
+            background-image: 
+                linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%, #e5e7eb), 
+                linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%, #e5e7eb);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
         }
     </style>
 </head>
 <body class="bg-gray-100 h-full overflow-hidden flex items-center justify-center p-2 bg-construction">
     
-    <div class="w-full max-w-sm h-full max-h-[750px] bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/50 flex flex-col overflow-hidden">
+    <div class="w-full max-w-sm h-full max-h-[750px] bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/50 flex flex-col overflow-hidden">
         
         <!-- 헤더 -->
-        <div class="py-8 text-center border-b border-white/50 bg-white/50">
+        <div class="py-8 text-center border-b border-gray-100">
             <h1 class="text-3xl font-black text-indigo-900 tracking-tight mb-1">말따먹기 정복</h1>
-            <p class="text-gray-600 text-sm font-medium">토목기사 실기 핵심 마스터</p>
+            <p class="text-gray-500 text-sm font-medium">토목기사 실기 핵심 마스터</p>
         </div>
 
         <!-- 메뉴 그리드 -->
@@ -46,19 +50,17 @@
 
         <!-- 설정 영역 -->
         <div class="px-6 pb-6 flex-1">
-            <!-- 시험일 한 줄 배치 -->
             <div class="flex items-center gap-3 mb-4">
                 <span class="text-xs font-bold text-gray-500 whitespace-nowrap">시험일 설정</span>
-                <input type="date" id="date-input" onchange="saveData()" class="flex-1 p-2 text-xs rounded-xl border border-gray-200 bg-white/50 outline-none">
+                <input type="date" id="date-input" onchange="saveData()" class="flex-1 p-2 text-xs rounded-xl border border-gray-200 bg-gray-50 outline-none">
             </div>
             
-            <!-- D-Day 및 각오 -->
-            <div id="d-day-display" class="text-center text-indigo-900 font-black text-xl mb-2"></div>
-            <input type="text" id="goal-input" oninput="saveData()" placeholder="오늘의 각오 한 줄" class="w-full text-center p-2 text-sm rounded-xl border border-gray-200 bg-white/50 outline-none">
+            <div id="d-day-display" class="text-center text-indigo-900 font-black text-2xl mb-2"></div>
+            <input type="text" id="goal-input" oninput="saveData()" placeholder="오늘의 각오 한 줄" class="w-full text-center p-2 text-sm rounded-xl border border-gray-200 bg-gray-50 outline-none">
         </div>
 
         <!-- 푸터 -->
-        <div class="p-4 text-center border-t border-white/50">
+        <div class="p-4 text-center border-t border-gray-100">
             <p class="text-indigo-400 text-[10px] font-bold">제작자: 국민대불주먹</p>
         </div>
     </div>
