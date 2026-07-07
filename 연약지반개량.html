@@ -17,7 +17,6 @@
     
     <div class="w-full max-w-sm h-full max-h-[700px] bg-white rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
         
-        <!-- 홈 버튼이 포함된 헤더 영역 -->
         <div class="relative p-4 text-center border-b border-gray-50">
             <a href="index.html" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-100 transition">🏠</a>
             <h1 class="text-lg font-bold text-gray-800">연약지반/터널 마스터</h1>
@@ -37,8 +36,13 @@
 
         <div id="nav-controls" class="hidden p-4 border-t border-gray-100">
             <div class="flex justify-between items-center">
-                <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                <div class="flex flex-col gap-1">
+                    <button onclick="location.reload()" class="text-[10px] text-gray-400 hover:text-indigo-600 font-bold underline transition text-left">처음으로</button>
+                    <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                </div>
+                
                 <span id="progress" class="text-gray-400 font-bold text-sm">1 / 26</span>
+                
                 <button onclick="nextQuestion()" id="next-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">다음</button>
             </div>
         </div>
@@ -74,15 +78,7 @@
             { id: 26, q: "터널 방재설비 종류 3가지는?", o: ["옥내소화전", "비상조명", "제연설비", "배수설비", "환기"], ans: [0, 1, 2], exp: "옥내소화전, 비상조명, 제연설비" }
         ];
 
-        let currentIndex = 0;
-        const quotes = [
-            "정확한 지반 조사가 견고한 구조물을 만듭니다.",
-            "토목의 시작은 땅을 읽는 것에서부터입니다.",
-            "기초가 흔들리면 전체가 무너집니다.",
-            "철저한 시공 관리만이 안전을 보장합니다.",
-            "데이터 기반의 판단이 공학자의 자질입니다."
-        ];
-
+        // 데이터 사전 처리: 옵션 셔플링
         function shuffle(array) {
             let curr = array.length, randomIndex;
             while (curr != 0) {
@@ -102,6 +98,7 @@
         });
 
         window.onload = () => {
+            const quotes = ["정확한 지반 조사가 견고한 구조물을 만듭니다.", "토목의 시작은 땅을 읽는 것에서부터입니다.", "기초가 흔들리면 전체가 무너집니다.", "철저한 시공 관리만이 안전을 보장합니다.", "데이터 기반의 판단이 공학자의 자질입니다."];
             const quoteEl = document.getElementById('daily-quote');
             if(quoteEl) quoteEl.innerText = `❝ ${quotes[Math.floor(Math.random() * quotes.length)]} ❞`;
         };
@@ -144,11 +141,6 @@
             
             if (!expl.classList.contains('hidden')) {
                 expl.classList.add('hidden');
-                checkboxes.forEach(cb => {
-                    cb.checked = false;
-                    cb.parentElement.classList.remove('correct-border', 'incorrect-border');
-                    cb.parentElement.classList.add('border-gray-100');
-                });
                 return;
             }
 
@@ -157,7 +149,7 @@
                 cb.parentElement.classList.remove('correct-border', 'incorrect-border');
                 if (q.shuffledAns.includes(idx)) {
                     cb.parentElement.classList.add('correct-border');
-                } else if (cb.checked && !q.shuffledAns.includes(idx)) {
+                } else if (cb.checked) {
                     cb.parentElement.classList.add('incorrect-border');
                 }
             });
