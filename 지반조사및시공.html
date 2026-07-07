@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>지반조사 및 시공 마스터 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .correct-border { border: 2px solid #22c55e !important; background-color: #f0fdf4; }
+        .incorrect-border { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
+        .slide-enter { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-100 h-full overflow-hidden flex items-center justify-center p-2">
+    
+    <div class="w-full max-w-sm h-full max-h-[700px] bg-white rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
+        
+        <div class="p-4 text-center border-b border-gray-50">
+            <h1 class="text-lg font-bold text-gray-800">지반조사 및 시공 마스터</h1>
+        </div>
+
+        <div id="quiz-viewport" class="flex-1 p-5 overflow-y-auto slide-enter">
+            <!-- 시작 화면을 Flex로 정중앙 배치 -->
+            <div id="start-screen" class="flex flex-col items-center justify-center h-full text-center space-y-6">
+                <div>
+                    <div class="text-6xl mb-4">🛠️</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1">토목기사 실기 대비</h2>
+                    <p class="text-gray-500 text-sm">지반조사 및 시공 25문제 학습하기</p>
+                </div>
+                <button onclick="startQuiz()" class="w-3/4 bg-indigo-600 text-white py-4 rounded-2xl hover:bg-indigo-700 transition font-bold shadow-lg active:scale-95">퀴즈 시작하기</button>
+                <p id="daily-quote" class="text-gray-400 italic text-xs font-medium leading-relaxed max-w-[250px]"></p>
+            </div>
+        </div>
+
+        <div id="nav-controls" class="hidden p-4 border-t border-gray-100">
+            <div class="flex justify-between items-center">
+                <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                <span id="progress" class="text-gray-400 font-bold text-sm">1 / 25</span>
+                <button onclick="nextQuestion()" id="next-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">다음</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            { id: 1, q: "크로스홀 탐사법의 목적은?", o: ["지반 탄성파 속도 측정", "지하수위 측정", "토압 측정", "전단강도 측정", "압밀도 측정"], ans: [0], exp: "시추공 간 탄성파(P파, S파) 속도 측정" },
+            { id: 2, q: "정적 사운딩 시험기 3가지는?", o: ["CPT", "베인시험", "이중관식", "SPT", "표준관입시험"], ans: [0, 1, 2], exp: "CPT, 베인시험, 이중관식사운딩" },
+            { id: 3, q: "표준관입시험 N치의 정의는?", o: ["63.5kg 추 76cm 낙하", "30cm 관입 타격수", "지반의 전단강도", "투수계수", "공극률"], ans: [0, 1], exp: "63.5kg 추를 76cm 높이에서 자유낙하, 30cm 관입 타격수" },
+            { id: 4, q: "CPT(원뿔관입시험) 측정값 3가지는?", o: ["선단저항", "주면마찰력", "간극수압", "N치", "투수계수"], ans: [0, 1, 2], exp: "선단저항, 주면마찰력, 간극수압" },
+            { id: 5, q: "현장투수시험의 종류 3가지는?", o: ["양수시험", "주수시험", "구멍내기시험", "표준관입", "베인시험"], ans: [0, 1, 2], exp: "양수시험, 주수시험, 구멍내기(수위복귀)시험" },
+            { id: 6, q: "PSC 말뚝의 장점 4가지는?", o: ["균열 방지", "내하력 큼", "장척화 가능", "품질 균일", "무게 가벼움"], ans: [0, 1, 2, 3], exp: "균열 방지, 내하력 증대, 긴 길이 제작 가능, 품질 균일" },
+            { id: 7, q: "시험항타의 목적 5가지는?", o: ["지지력 확인", "항타장비 성능확인", "말뚝 길이 결정", "관입 가능 여부", "시공방법 결정", "말뚝 비용 절감"], ans: [0, 1, 2, 3, 4], exp: "지지력 확인, 장비 성능 확인, 말뚝 길이/시공방법 결정, 관입성 확인" },
+            { id: 8, q: "슬라임 제거방법 3가지는?", o: ["수중펌프", "에어리프트", "샌드펌프", "다짐", "압밀"], ans: [0, 1, 2], exp: "수중펌프, 에어리프트, 샌드펌프" },
+            { id: 9, q: "말뚝의 지지력 산정방법 3가지는?", o: ["동적재하시험", "정적재하시험", "토질정수 이용", "타격공식", "투수시험"], ans: [0, 1, 3], exp: "동적재하시험, 정적재하시험, 타격공식" },
+            { id: 10, q: "수동말뚝 해석방법 3가지는?", o: ["지반반력계수법", "탄성지반법", "유한요소법", "표준관입시험", "베인시험"], ans: [0, 1, 2], exp: "지반반력계수법, 탄성지반법, 유한요소법" },
+            { id: 11, q: "말뚝 압축/정적재하시험 방법 3가지는?", o: ["완속재하", "급속재하", "반복재하", "동적재하", "현장타설"], ans: [0, 1, 2], exp: "완속재하시험, 급속재하시험, 반복재하시험" },
+            { id: 12, q: "케이슨 진수 공법 3가지는?", o: ["예인선 진수", "도크식 진수", "기운내기 진수", "직접 매립", "압축공기"], ans: [0, 1, 2], exp: "예인선 진수, 도크식, 기운내기식" },
+            { id: 13, q: "우물통 기초 침하촉진방법 2가지는?", o: ["물빼기", "하중재하", "분사법", "동결법", "살수법"], ans: [0, 1], exp: "물빼기, 하중재하(상재하중)" },
+            { id: 14, q: "우물통 기초 편위 원인 3가지는?", o: ["지반 불균일", "굴착 불균형", "장애물", "진수 속도", "온도"], ans: [0, 1, 2], exp: "지반 불균일, 굴착 편향, 장애물 충돌" },
+            { id: 15, q: "어스드릴 공법 시공순서 핵심은?", o: ["굴착-공벽보호-철근망-콘크리트", "콘크리트-철근-굴착", "철근-굴착-콘크리트", "굴착-콘크리트-철근", "공벽보호-굴착-콘크리트"], ans: [0], exp: "굴착 → 공벽보호(벤토나이트) → 철근망 → 콘크리트 타설" },
+            { id: 16, q: "사운딩(Sounding)의 정의는?", o: ["로드 선단 관입/회전/인발하여 저항 측정", "투수계수 측정", "지하수위 측정", "압밀 측정", "전단강도 측정"], ans: [0], exp: "로드 선단을 지반에 관입/회전시켜 저항 측정" },
+            { id: 17, q: "사질토/점성토 N치 추정값은?", o: ["상대밀도/일축압축강도", "투수계수/압밀도", "지하수위/함수비", "다짐도/간극비", "전단강도/투수계수"], ans: [0], exp: "사질토: 상대밀도, 점성토: 일축압축강도" },
+            { id: 18, q: "PSC 말뚝 장점 외 또 다른 특징은?", o: ["고강도 콘크리트", "원심력 성형", "균열 저항성", "저렴한 가격", "경량성"], ans: [0, 1, 2], exp: "고강도 콘크리트, 원심력 성형, 균열 저항성" },
+            { id: 19, q: "그물식 뿌리말뚝(RRP) 정의는?", o: ["소구경 말뚝을 그물처럼 망상 배치", "대구경 말뚝 배치", "케이슨 기초", "우물통 기초", "파일 기초"], ans: [0], exp: "소구경 말뚝을 망상으로 배치하여 지반 보강" },
+            { id: 20, q: "현장타설 말뚝 굴착방법 3가지는?", o: ["어스드릴", "리버스 서큘레이션", "벤토나이트", "항타공법", "폭파공법"], ans: [0, 1, 2], exp: "어스드릴, 리버스서큘레이션, 베노토 공법" },
+            { id: 21, q: "수평력 받는 말뚝 2종류는?", o: ["수동말뚝", "능동말뚝", "수직말뚝", "경사말뚝", "항타말뚝"], ans: [0, 1], exp: "수동말뚝, 능동말뚝" },
+            { id: 22, q: "오픈케이슨 장점은?", o: ["공기 짧음", "설비 간단", "심부 굴착 유리", "수심 제한 없음", "암반 굴착 용이"], ans: [0, 1], exp: "공기 짧음, 설비가 간단" },
+            { id: 23, q: "공기케이슨 장점은?", o: ["암반 굴착 용이", "수중작업 불필요", "정밀 시공", "저렴한 비용", "빠른 시공"], ans: [0, 1, 2], exp: "암반 굴착 용이, 수중작업 불필요, 정밀 시공" },
+            { id: 24, q: "말뚝상부/하부 재질이 다른 파일(SPC)은?", o: ["선단부 고강도/상부 일반", "상부 고강도/선단부 일반", "전부 동일", "철재", "목재"], ans: [0], exp: "선단부 지지력 좋은 재질/상부 경제적 재질 복합 사용" },
+            { id: 25, q: "사운딩시험의 공통적 목적은?", o: ["지반 지지력 추정", "투수계수 측정", "지하수위 측정", "다짐 에너지 측정", "전단강도 측정"], ans: [0, 4], exp: "지반의 지지력 및 전단강도 추정" }
+        ];
+
+        let currentIndex = 0;
+        const quotes = [
+            "정확한 지반 조사가 견고한 구조물을 만듭니다.",
+            "토목의 시작은 땅을 읽는 것에서부터입니다.",
+            "기초가 흔들리면 전체가 무너집니다.",
+            "철저한 시공 관리만이 안전을 보장합니다.",
+            "데이터 기반의 판단이 공학자의 자질입니다."
+        ];
+
+        function shuffle(array) {
+            let curr = array.length, randomIndex;
+            while (curr != 0) {
+                randomIndex = Math.floor(Math.random() * curr);
+                curr--;
+                [array[curr], array[randomIndex]] = [array[randomIndex], array[curr]];
+            }
+            return array;
+        }
+
+        quizData.forEach(q => {
+            let items = q.o.map((text, idx) => ({ text, isAns: q.ans.includes(idx) }));
+            items = shuffle(items);
+            q.shuffledOptions = items.map(item => item.text);
+            q.shuffledAns = [];
+            items.forEach((item, idx) => { if (item.isAns) q.shuffledAns.push(idx); });
+        });
+
+        window.onload = () => {
+            const quoteEl = document.getElementById('daily-quote');
+            if(quoteEl) quoteEl.innerText = `❝ ${quotes[Math.floor(Math.random() * quotes.length)]} ❞`;
+        };
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('nav-controls').classList.remove('hidden');
+            renderCurrentQuestion();
+        }
+
+        function renderCurrentQuestion() {
+            const q = quizData[currentIndex];
+            const viewport = document.getElementById('quiz-viewport');
+            document.getElementById('progress').innerText = `${currentIndex + 1} / ${quizData.length}`;
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === quizData.length - 1;
+
+            viewport.innerHTML = `
+                <h3 class="text-gray-800 font-bold mb-4 text-base leading-snug">${currentIndex + 1}. ${q.q}</h3>
+                <div id="options-container" class="space-y-2">
+                    ${q.shuffledOptions.map((opt, idx) => `
+                        <label class="flex items-center p-3 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition active:bg-gray-100">
+                            <input type="checkbox" data-idx="${idx}" class="w-5 h-5 text-indigo-600 rounded-md border-gray-300 mr-3">
+                            <span class="text-gray-700 text-sm font-medium">${opt}</span>
+                        </label>
+                    `).join('')}
+                </div>
+                <button onclick="toggleAnswer()" class="mt-5 w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-bold shadow-md active:scale-95 text-sm">정답 확인</button>
+                <div id="expl-container" class="hidden mt-4 p-3 bg-indigo-50 text-indigo-900 rounded-xl text-xs border border-indigo-100 leading-relaxed">
+                    <strong>💡 정답 핵심 요약:</strong><br>${q.exp}
+                </div>
+            `;
+        }
+
+        function toggleAnswer() {
+            const q = quizData[currentIndex];
+            const container = document.getElementById('options-container');
+            const checkboxes = container.querySelectorAll('input');
+            const expl = document.getElementById('expl-container');
+            
+            if (!expl.classList.contains('hidden')) {
+                expl.classList.add('hidden');
+                checkboxes.forEach(cb => {
+                    cb.checked = false;
+                    cb.parentElement.classList.remove('correct-border', 'incorrect-border');
+                    cb.parentElement.classList.add('border-gray-100');
+                });
+                return;
+            }
+
+            checkboxes.forEach((cb) => {
+                const idx = parseInt(cb.getAttribute('data-idx'));
+                cb.parentElement.classList.remove('correct-border', 'incorrect-border');
+                if (q.shuffledAns.includes(idx)) {
+                    cb.parentElement.classList.add('correct-border');
+                } else if (cb.checked && !q.shuffledAns.includes(idx)) {
+                    cb.parentElement.classList.add('incorrect-border');
+                }
+            });
+            expl.classList.remove('hidden');
+        }
+
+        function prevQuestion() { if(currentIndex > 0) { currentIndex--; renderCurrentQuestion(); } }
+        function nextQuestion() { if(currentIndex < quizData.length - 1) { currentIndex++; renderCurrentQuestion(); } }
+    </script>
+</body>
+</html>
+```eof

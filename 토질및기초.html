@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>토질역학 및 기초 마스터 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .correct-border { border: 2px solid #22c55e !important; background-color: #f0fdf4; }
+        .incorrect-border { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
+        .slide-enter { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-100 h-full overflow-hidden flex items-center justify-center p-2">
+    
+    <div class="w-full max-w-sm h-full max-h-[700px] bg-white rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
+        
+        <div class="p-4 text-center border-b border-gray-50">
+            <h1 class="text-lg font-bold text-gray-800">토질역학 및 기초 마스터</h1>
+        </div>
+
+        <div id="quiz-viewport" class="flex-1 p-5 overflow-y-auto slide-enter">
+            <!-- 시작 화면을 Flex로 정중앙 배치 -->
+            <div id="start-screen" class="flex flex-col items-center justify-center h-full text-center space-y-6">
+                <div>
+                    <div class="text-6xl mb-4">🏗️</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1">토목기사 실기 대비</h2>
+                    <p class="text-gray-500 text-sm">토질역학 및 기초 30문제 학습하기</p>
+                </div>
+                <button onclick="startQuiz()" class="w-3/4 bg-indigo-600 text-white py-4 rounded-2xl hover:bg-indigo-700 transition font-bold shadow-lg active:scale-95">퀴즈 시작하기</button>
+                <p id="daily-quote" class="text-gray-400 italic text-xs font-medium leading-relaxed max-w-[250px]"></p>
+            </div>
+        </div>
+
+        <div id="nav-controls" class="hidden p-4 border-t border-gray-100">
+            <div class="flex justify-between items-center">
+                <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                <span id="progress" class="text-gray-400 font-bold text-sm">1 / 30</span>
+                <button onclick="nextQuestion()" id="next-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">다음</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            { id: 1, q: "흙의 애터버그(Atterberg) 한계의 종류 3가지를 쓰시오.", o: ["액성한계", "소성한계", "수축한계", "유동한계", "압밀한계"], ans: [0, 1, 2], exp: "액성한계, 소성한계, 수축한계" },
+            { id: 2, q: "통일분류법에서 자갈(G), 모래(S), 무기질 점토(C) 표기 기호는?", o: ["G, S, C", "G, M, C", "S, G, M", "C, S, G", "G, S, M"], ans: [0], exp: "자갈(G), 모래(S), 점토(C)" },
+            { id: 3, q: "다짐시 강도가 오히려 저하되는 현상은?", o: ["다짐곡선", "다짐효과", "과다짐 현상", "압밀침하", "보일링"], ans: [2], exp: "과다짐 현상(Over-compaction)" },
+            { id: 4, q: "투수계수에 영향을 미치는 요소 3가지는?", o: ["간극비", "흙 입자의 크기", "물의 점성", "다짐에너지", "전단강도"], ans: [0, 1, 2], exp: "간극비, 입경, 물의 점성" },
+            { id: 5, q: "군지수(group index)를 구할 때 필요한 요소 3가지는?", o: ["0.075mm 통과율", "액성한계", "소성지수", "다짐에너지", "전단강도"], ans: [0, 1, 2], exp: "0.075mm 통과율, 액성한계, 소성지수" },
+            { id: 6, q: "흙 다짐의 정의는?", o: ["공기 배출시켜 밀도 증대", "흙과 물 섞기", "흙 운반", "전단강도 저하", "투수성 증대"], ans: [0], exp: "간극 내 공기를 배출시켜 단위중량 증대" },
+            { id: 7, q: "흙 다짐의 기대효과 3가지는?", o: ["전단강도 증대", "압축성 감소", "투수성 감소", "동결 팽창 증대", "간극비 증대"], ans: [0, 1, 2], exp: "전단강도 증대, 압축성 감소, 투수성 감소" },
+            { id: 8, q: "성토 후 다짐 목적 3가지는?", o: ["강도 증대", "침하 감소", "투수성 감소", "공기 유입", "간극비 증대"], ans: [0, 1, 2], exp: "강도 증대, 침하 방지, 투수성 감소" },
+            { id: 9, q: "유선망의 특징 3가지는?", o: ["유선/등수두선 직교", "사각형 형태", "단위 유량 일정", "유선끼리 교차", "등수두선끼리 교차"], ans: [0, 1, 2], exp: "유선/등수두선 직교, 사각형, 단위유량 일정" },
+            { id: 10, q: "동상이 발생하기 쉬운 3가지 조건은?", o: ["실트질 흙", "높은 지하수위", "영하 기온 지속", "건조 상태", "자갈질 흙"], ans: [0, 1, 2], exp: "실트, 높은 지하수위, 영하 기온" },
+            { id: 11, q: "흙의 동결 방지 방법 3가지는?", o: ["치환", "차단", "배수", "다짐", "살수"], ans: [0, 1, 2], exp: "치환, 차단, 배수" },
+            { id: 12, q: "동상 대책 3가지는?", o: ["치환", "배수", "단열", "하중 추가", "급속 냉각"], ans: [0, 1, 2], exp: "치환, 배수, 단열" },
+            { id: 13, q: "침하의 종류 3가지는?", o: ["즉시침하", "1차 압밀침하", "2차 압밀침하", "지진침하", "동결침하"], ans: [0, 1, 2], exp: "즉시, 1차 압밀, 2차 압밀" },
+            { id: 14, q: "과압밀비(OCR) 설명은?", o: ["현재/과거", "과거/현재", "전응력/수압", "수압/전응력", "지반강도/하중"], ans: [1], exp: "과거 최대 유효상재하중 / 현재 유효상재하중" },
+            { id: 15, q: "유기질토의 특징 3가지는?", o: ["압축성 큼", "2차 압밀 큼", "투수성 낮음", "강도 높음", "다짐 쉬움"], ans: [0, 1, 2], exp: "압축성 큼, 2차 압밀 큼, 투수성 낮음" },
+            { id: 16, q: "1차 압밀침하량 산정방법 3가지는?", o: ["압밀시험", "현장재하", "표준관입", "압축지수 이용", "체적압축계수 이용"], ans: [0, 3, 4], exp: "압축지수 이용, 체적압축계수 이용, 압밀시험" },
+            { id: 17, q: "예민비 정의는?", o: ["불교란/교란 강도", "교란/불교란 강도", "간극비/함수비", "함수비/간극비", "전단강도/응력"], ans: [0], exp: "불교란 시료 강도 / 교란 시료 강도" },
+            { id: 18, q: "사질토 전단저항 상실 현상은?", o: ["보일링", "히빙", "액상화", "파이핑", "침하"], ans: [2], exp: "액상화 현상" },
+            { id: 19, q: "보일링 방지대책 3가지는?", o: ["지하수위 저하", "근입깊이 연장", "웰 포인트", "다짐", "성토"], ans: [0, 1, 2], exp: "지하수위 저하, 근입깊이 연장, 웰 포인트" },
+            { id: 20, q: "히빙 정의/대책 2가지는?", o: ["연약점성토 파괴", "근입깊이 증가", "상재하중 제거", "다짐", "지수벽"], ans: [0, 1, 4], exp: "정의: 연약점성토 파괴, 대책: 근입깊이, 지수벽" },
+            { id: 21, q: "횡방향 토압 종류 3가지는?", o: ["정지토압", "주동토압", "수동토압", "반사토압", "흡착토압"], ans: [0, 1, 2], exp: "정지토압, 주동토압, 수동토압" },
+            { id: 22, q: "정지토압 받는 구조물 3가지는?", o: ["지하실 벽", "교대", "암거", "자유옹벽", "말뚝"], ans: [0, 1, 2], exp: "지하실 벽, 교대, 암거" },
+            { id: 23, q: "주동토압 최소화 방법 3가지는?", o: ["벽체 배수", "경량 성토", "뒷채움 다짐", "높이 증가", "기초 확대"], ans: [0, 1, 2], exp: "벽체 배수, 경량 성토, 뒷채움 다짐" },
+            { id: 24, q: "옹벽 형식 3가지는?", o: ["중력식", "반중력식", "캔틸레버식", "부벽식", "교각식"], ans: [0, 2, 3], exp: "중력식, 캔틸레버식, 부벽식" },
+            { id: 25, q: "보강토 옹벽 구성 3요소는?", o: ["보강재", "뒤채움 흙", "전면 벽체", "기초", "파일"], ans: [0, 1, 2], exp: "보강재, 뒤채움 흙, 전면 벽체" },
+            { id: 26, q: "얕은 기초 파괴형태 3가지는?", o: ["전반전단파괴", "국부전단파괴", "관입전단파괴", "압밀파괴", "회전파괴"], ans: [0, 1, 2], exp: "전반, 국부, 관입전단파괴" },
+            { id: 27, q: "얕은 기초 구비조건 3가지는?", o: ["침하 허용범위", "파괴 안전", "지지력 확보", "지하수 차단", "동결 방지"], ans: [0, 1, 2], exp: "지지력 확보, 침하 허용치, 깊이 확보" },
+            { id: 28, q: "기초 구비조건 3가지는?", o: ["파괴 안전", "침하 최소화", "시공성 고려", "미관", "고가재료"], ans: [0, 1, 2], exp: "안전성(지지력), 경제성, 사용성(침하)" },
+            { id: 29, q: "부마찰력 원인 3가지는?", o: ["주변 점성토 압밀", "지하수위 저하", "주변 지반 침하", "상재하중", "강성 증가"], ans: [0, 2, 3], exp: "압밀, 주변지반 침하, 상재하중" },
+            { id: 30, q: "부마찰력 대책 3가지는?", o: ["역청재 도포", "말뚝 표면처리", "말뚝간격 조정", "직경 크게", "박기 간격"], ans: [0, 1, 2, 3, 4], exp: "역청재 도포, 표면처리, 말뚝간격" }
+        ];
+
+        let currentIndex = 0;
+        const quotes = [
+            "토목은 세상을 지탱하는 뿌리입니다.",
+            "오늘의 노력은 내일의 안전한 기반이 됩니다.",
+            "공학적 지식은 정직함 위에서 빛을 발합니다.",
+            "어려운 문제일수록 기초에 답이 있습니다.",
+            "작은 벽돌 하나가 튼튼한 댐을 만듭니다."
+        ];
+
+        function shuffle(array) {
+            let curr = array.length, randomIndex;
+            while (curr != 0) {
+                randomIndex = Math.floor(Math.random() * curr);
+                curr--;
+                [array[curr], array[randomIndex]] = [array[randomIndex], array[curr]];
+            }
+            return array;
+        }
+
+        quizData.forEach(q => {
+            let items = q.o.map((text, idx) => ({ text, isAns: q.ans.includes(idx) }));
+            items = shuffle(items);
+            q.shuffledOptions = items.map(item => item.text);
+            q.shuffledAns = [];
+            items.forEach((item, idx) => { if (item.isAns) q.shuffledAns.push(idx); });
+        });
+
+        window.onload = () => {
+            const quoteEl = document.getElementById('daily-quote');
+            if(quoteEl) quoteEl.innerText = `❝ ${quotes[Math.floor(Math.random() * quotes.length)]} ❞`;
+        };
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('nav-controls').classList.remove('hidden');
+            renderCurrentQuestion();
+        }
+
+        function renderCurrentQuestion() {
+            const q = quizData[currentIndex];
+            const viewport = document.getElementById('quiz-viewport');
+            document.getElementById('progress').innerText = `${currentIndex + 1} / ${quizData.length}`;
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === quizData.length - 1;
+
+            viewport.innerHTML = `
+                <h3 class="text-gray-800 font-bold mb-4 text-base leading-snug">${currentIndex + 1}. ${q.q}</h3>
+                <div id="options-container" class="space-y-2">
+                    ${q.shuffledOptions.map((opt, idx) => `
+                        <label class="flex items-center p-3 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition active:bg-gray-100">
+                            <input type="checkbox" data-idx="${idx}" class="w-5 h-5 text-indigo-600 rounded-md border-gray-300 mr-3">
+                            <span class="text-gray-700 text-sm font-medium">${opt}</span>
+                        </label>
+                    `).join('')}
+                </div>
+                <button onclick="toggleAnswer()" class="mt-5 w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-bold shadow-md active:scale-95 text-sm">정답 확인</button>
+                <div id="expl-container" class="hidden mt-4 p-3 bg-indigo-50 text-indigo-900 rounded-xl text-xs border border-indigo-100 leading-relaxed">
+                    <strong>💡 정답 핵심 요약:</strong><br>${q.exp}
+                </div>
+            `;
+        }
+
+        function toggleAnswer() {
+            const q = quizData[currentIndex];
+            const container = document.getElementById('options-container');
+            const checkboxes = container.querySelectorAll('input');
+            const expl = document.getElementById('expl-container');
+            
+            if (!expl.classList.contains('hidden')) {
+                expl.classList.add('hidden');
+                checkboxes.forEach(cb => {
+                    cb.checked = false;
+                    cb.parentElement.classList.remove('correct-border', 'incorrect-border');
+                    cb.parentElement.classList.add('border-gray-100');
+                });
+                return;
+            }
+
+            checkboxes.forEach((cb) => {
+                const idx = parseInt(cb.getAttribute('data-idx'));
+                cb.parentElement.classList.remove('correct-border', 'incorrect-border');
+                if (q.shuffledAns.includes(idx)) {
+                    cb.parentElement.classList.add('correct-border');
+                } else if (cb.checked && !q.shuffledAns.includes(idx)) {
+                    cb.parentElement.classList.add('incorrect-border');
+                }
+            });
+            expl.classList.remove('hidden');
+        }
+
+        function prevQuestion() { if(currentIndex > 0) { currentIndex--; renderCurrentQuestion(); } }
+        function nextQuestion() { if(currentIndex < quizData.length - 1) { currentIndex++; renderCurrentQuestion(); } }
+    </script>
+</body>
+</html>
+```eof

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>토공 및 품질관리 마스터 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .correct-border { border: 2px solid #22c55e !important; background-color: #f0fdf4; }
+        .incorrect-border { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
+        .slide-enter { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-100 h-full overflow-hidden flex items-center justify-center p-2">
+    
+    <div class="w-full max-w-sm h-full max-h-[700px] bg-white rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
+        
+        <div class="p-4 text-center border-b border-gray-50">
+            <h1 class="text-lg font-bold text-gray-800">토공 및 품질관리 마스터</h1>
+        </div>
+
+        <div id="quiz-viewport" class="flex-1 p-5 overflow-y-auto slide-enter">
+            <!-- 시작 화면을 Flex로 정중앙 배치 -->
+            <div id="start-screen" class="flex flex-col items-center justify-center h-full text-center space-y-6">
+                <div>
+                    <div class="text-6xl mb-4">🚜</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1">토목기사 실기 대비</h2>
+                    <p class="text-gray-500 text-sm">토공 및 품질관리 35문제 학습하기</p>
+                </div>
+                <button onclick="startQuiz()" class="w-3/4 bg-indigo-600 text-white py-4 rounded-2xl hover:bg-indigo-700 transition font-bold shadow-lg active:scale-95">퀴즈 시작하기</button>
+                <p id="daily-quote" class="text-gray-400 italic text-xs font-medium leading-relaxed max-w-[250px]"></p>
+            </div>
+        </div>
+
+        <div id="nav-controls" class="hidden p-4 border-t border-gray-100">
+            <div class="flex justify-between items-center">
+                <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                <span id="progress" class="text-gray-400 font-bold text-sm">1 / 35</span>
+                <button onclick="nextQuestion()" id="next-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">다음</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* STREAMING_CHUNK:Initialize quiz data... */
+        const quizData = [
+            { id: 1, q: "발파 시 비산의 원인 3가지는?", o: ["장약과다", "지발시간부적절", "피복불량", "기온높음", "암질연약"], ans: [0, 1, 2], exp: "장약과다, 지발시간부적절, 피복불량" },
+            { id: 2, q: "심발공의 종류 4가지는?", o: ["V컷", "피라미드컷", "스윙컷", "상향컷", "심심컷"], ans: [0, 1, 2, 4], exp: "V컷, 피라미드컷, 스윙컷, 심심컷" },
+            { id: 3, q: "성토재료의 요구조건 5가지는?", o: ["압축성작음", "투수성적당", "강도큼", "시공용이", "안정성", "비용절감"], ans: [0, 1, 2, 3, 4], exp: "압축성작음, 투수성적당, 강도큼, 시공용이, 안정성" },
+            { id: 4, q: "성토 다짐도 판정방법 4가지는?", o: ["건조밀도", "포화도", "공기공극률", "상대다짐도", "전단강도"], ans: [0, 1, 2, 3], exp: "건조밀도, 포화도, 공기공극률, 상대다짐도" },
+            { id: 5, q: "유토곡선(Mass Curve) 작성 목적 3가지는?", o: ["토량계산", "운반거리산정", "토공기계선정", "배수계획", "성토량산정"], ans: [0, 1, 2], exp: "토량계산, 운반거리산정, 토공기계선정" },
+            { id: 6, q: "지하연속벽 장점 3가지는?", o: ["차수성우수", "강성큼", "저소음저진동", "공기단축", "비용절감"], ans: [0, 1, 2], exp: "차수성, 강성큼, 저소음/저진동" },
+            { id: 7, q: "양압력(부력) 저항방법 3가지는?", o: ["배수공법", "연직말뚝", "영구앵커", "중량증대", "토압이용"], ans: [0, 1, 2], exp: "배수공법, 연직말뚝, 영구앵커" },
+            { id: 8, q: "도심지 계측기기 명칭 3가지는?", o: ["지중경사계", "지하수위계", "하중계", "온도계", "풍속계"], ans: [0, 1, 2], exp: "지중경사계, 지하수위계, 하중계" },
+            { id: 9, q: "토목섬유 주요 기능 4가지는?", o: ["여과", "배수", "보강", "차수", "단열"], ans: [0, 1, 2, 3], exp: "여과, 배수, 보강, 차수" },
+            { id: 10, q: "시멘트 풍화현상 3가지는?", o: ["강도저하", "응결지연", "비중감소", "강도증가", "무게증가"], ans: [0, 1, 2], exp: "강도저하, 응결지연, 비중감소" },
+            { id: 11, q: "콘크리트 중성화(탄산화) 대책 3가지는?", o: ["물시멘트비저감", "피복두께증가", "중성화억제제", "타설온도조절", "급속양생"], ans: [0, 1, 2], exp: "물시멘트비 저감, 피복두께 증가, 중성화억제제" },
+            { id: 12, q: "워커빌리티 측정방법 3가지는?", o: ["슬럼프", "다짐계수", "플로우", "비중측정", "압축강도"], ans: [0, 1, 2], exp: "슬럼프, 다짐계수, 플로우시험" },
+            { id: 13, q: "콘크리트 초기균열 종류 3가지는?", o: ["침하균열", "소성수축균열", "건조수축균열", "구조균열", "피로균열"], ans: [0, 1, 2], exp: "침하균열, 소성수축균열, 건조수축균열" },
+            { id: 14, q: "콘크리트 균열 보수기법 4가지는?", o: ["충전법", "주입법", "피복법", "표면처리법", "단열법"], ans: [0, 1, 2, 3], exp: "충전법, 주입법, 피복법, 표면처리법" },
+            { id: 15, q: "프라임 코트 목적 3가지는?", o: ["침투성부여", "방수성", "기층결합력", "표면평탄화", "미관"], ans: [0, 1, 2], exp: "침투성, 방수성, 기층결합력" },
+            { id: 16, q: "아스팔트 포장 장점 3가지는?", o: ["시공용이", "공기단축", "소음적음", "고강도", "동결방지"], ans: [0, 1, 2], exp: "시공용이, 공기단축, 소음적음" },
+            { id: 17, q: "콘크리트 포장 줄눈 종류 3가지는?", o: ["가로수축", "가로팽창", "세로줄눈", "횡방향줄눈", "경사줄눈"], ans: [0, 1, 2], exp: "가로수축, 가로팽창, 세로줄눈" },
+            { id: 18, q: "포장 파손 용어 설명 (펌핑)?", o: ["줄눈하부 진흙분출", "표면박리", "블록파손", "균열발생", "침하"], ans: [0], exp: "줄눈 하부로 진흙이 솟아오르는 현상" },
+            { id: 19, q: "교통섬 목적 3가지는?", o: ["교통정리", "보행자안전", "차로안내", "포장보호", "동물보호"], ans: [0, 1, 2], exp: "교통정리, 보행자안전, 차로안내" },
+            { id: 20, q: "매스콘크리트 온도균열 억제방법?", o: ["저발열시멘트", "프리쿨링", "파이프쿨링", "고강도시멘트", "급속타설"], ans: [0, 1, 2], exp: "저발열시멘트, 프리쿨링, 파이프쿨링" },
+            { id: 21, q: "촉진양생법 3가지는?", o: ["증기양생", "온수양생", "전기양생", "살수양생", "건조양생"], ans: [0, 1, 2], exp: "증기양생, 온수양생, 전기양생" },
+            { id: 22, q: "도로 평면선형 요소 3가지는?", o: ["직선", "원곡선", "완화곡선", "종단경사", "횡단경사"], ans: [0, 1, 2], exp: "직선, 원곡선, 완화곡선" },
+            { id: 23, q: "배수성 포장 효과 3가지는?", o: ["수막현상방지", "시인성향상", "소음저감", "강도향상", "미관"], ans: [0, 1, 2], exp: "수막현상방지, 시인성, 소음저감" },
+            { id: 24, q: "수중콘크리트 주의사항 3가지는?", o: ["물시멘트비저감", "재료분리방지", "타설장비이용", "급속타설", "강제건조"], ans: [0, 1, 2], exp: "물시멘트비 저감, 재료분리 방지, 타설장비 사용" },
+            { id: 25, q: "시공이음 위치 및 방향?", o: ["전단력 최소", "철근 직각방향", "응력집중부피함", "중앙부위치", "경사방향"], ans: [0, 1], exp: "전단력 최소, 철근 직각방향" },
+            { id: 26, q: "가물막이의 종류 3가지는?", o: ["한겹말뚝식", "두겹말뚝식", "토사식", "철근식", "숏크리트식"], ans: [0, 1, 2], exp: "한겹말뚝식, 두겹말뚝식, 토사식" },
+            { id: 27, q: "댐 기초 그라우팅 목적?", o: ["차수성", "지반강화", "누수방지", "미관", "단열"], ans: [0, 1, 2], exp: "차수성, 지반강화, 누수방지" },
+            { id: 28, q: "측구의 형식 3가지는?", o: ["U형", "V형", "L형", "원형", "삼각형"], ans: [0, 1, 2], exp: "U형, V형, L형" },
+            { id: 29, q: "방파제 구조형식 3가지는?", o: ["직립제", "경사제", "혼성제", "판재", "말뚝제"], ans: [0, 1, 2], exp: "직립제, 경사제, 혼성제" },
+            { id: 30, q: "롤러다짐 콘크리트댐(RCD)이란?", o: ["빈배합콘크리트", "롤러다짐", "공기단축", "고강도", "습식양생"], ans: [0, 1, 2], exp: "빈배합 콘크리트 사용, 롤러다짐, 공기단축" },
+            { id: 31, q: "관리도 작성 기준 2가지는?", o: ["관리한계선", "중심선", "데이터점", "작성일", "시험자"], ans: [0, 1], exp: "관리한계선(UCL, LCL), 중심선(CL)" },
+            { id: 32, q: "콜드조인트의 정의?", o: ["먼저 타설 콘크리트와 이어칠 때 응결", "이어치기 시 시간초과", "균열발생", "콘크리트결함", "온도차"], ans: [0, 1], exp: "먼저 타설한 콘크리트와 나중에 타설한 콘크리트의 일체성이 결여" },
+            { id: 33, q: "부력과 양압력 정의?", o: ["부력:전체힘", "양압력:하부상향압력", "동일함", "서로반대", "압력차"], ans: [0, 1], exp: "부력:물에 잠긴 물체 전체가 받는 상향력, 양압력:구조물 하부의 상향 수압" },
+            { id: 34, q: "철근의 정착방법 3가지는?", o: ["직선", "갈고리", "기계적", "용접", "단순"], ans: [0, 1, 2], exp: "직선 정착, 갈고리 정착, 기계적 정착" },
+            { id: 35, q: "교량 내진해석방법 3가지는?", o: ["정적해석", "응답스펙트럼", "시간이력해석", "실험", "육안"], ans: [0, 1, 2], exp: "정적해석, 응답스펙트럼해석, 시간이력해석" }
+        ];
+
+        /* STREAMING_CHUNK:Initialize logic... */
+        let currentIndex = 0;
+        const quotes = [
+            "정확한 공정 관리와 품질 기준이 명품 구조물을 만듭니다.",
+            "토목의 현장은 정직합니다. 기초가 전부입니다.",
+            "기술자의 실수는 현장의 사고로 이어집니다.",
+            "도면과 시방서를 곁에 두는 것이 기술자의 기본입니다.",
+            "오늘의 땀방울이 내일의 안전한 사회를 만듭니다."
+        ];
+
+        function shuffle(array) {
+            let curr = array.length, randomIndex;
+            while (curr != 0) {
+                randomIndex = Math.floor(Math.random() * curr);
+                curr--;
+                [array[curr], array[randomIndex]] = [array[randomIndex], array[curr]];
+            }
+            return array;
+        }
+
+        quizData.forEach(q => {
+            let items = q.o.map((text, idx) => ({ text, isAns: q.ans.includes(idx) }));
+            items = shuffle(items);
+            q.shuffledOptions = items.map(item => item.text);
+            q.shuffledAns = [];
+            items.forEach((item, idx) => { if (item.isAns) q.shuffledAns.push(idx); });
+        });
+
+        window.onload = () => {
+            const quoteEl = document.getElementById('daily-quote');
+            if(quoteEl) quoteEl.innerText = `❝ ${quotes[Math.floor(Math.random() * quotes.length)]} ❞`;
+        };
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('nav-controls').classList.remove('hidden');
+            renderCurrentQuestion();
+        }
+
+        function renderCurrentQuestion() {
+            const q = quizData[currentIndex];
+            const viewport = document.getElementById('quiz-viewport');
+            document.getElementById('progress').innerText = `${currentIndex + 1} / ${quizData.length}`;
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === quizData.length - 1;
+
+            viewport.innerHTML = `
+                <h3 class="text-gray-800 font-bold mb-4 text-base leading-snug">${currentIndex + 1}. ${q.q}</h3>
+                <div id="options-container" class="space-y-2">
+                    ${q.shuffledOptions.map((opt, idx) => `
+                        <label class="flex items-center p-3 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition active:bg-gray-100">
+                            <input type="checkbox" data-idx="${idx}" class="w-5 h-5 text-indigo-600 rounded-md border-gray-300 mr-3">
+                            <span class="text-gray-700 text-sm font-medium">${opt}</span>
+                        </label>
+                    `).join('')}
+                </div>
+                <button onclick="toggleAnswer()" class="mt-5 w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-bold shadow-md active:scale-95 text-sm">정답 확인</button>
+                <div id="expl-container" class="hidden mt-4 p-3 bg-indigo-50 text-indigo-900 rounded-xl text-xs border border-indigo-100 leading-relaxed">
+                    <strong>💡 정답 핵심 요약:</strong><br>${q.exp}
+                </div>
+            `;
+        }
+
+        function toggleAnswer() {
+            const q = quizData[currentIndex];
+            const container = document.getElementById('options-container');
+            const checkboxes = container.querySelectorAll('input');
+            const expl = document.getElementById('expl-container');
+            
+            if (!expl.classList.contains('hidden')) {
+                expl.classList.add('hidden');
+                checkboxes.forEach(cb => {
+                    cb.checked = false;
+                    cb.parentElement.classList.remove('correct-border', 'incorrect-border');
+                    cb.parentElement.classList.add('border-gray-100');
+                });
+                return;
+            }
+
+            checkboxes.forEach((cb) => {
+                const idx = parseInt(cb.getAttribute('data-idx'));
+                cb.parentElement.classList.remove('correct-border', 'incorrect-border');
+                if (q.shuffledAns.includes(idx)) {
+                    cb.parentElement.classList.add('correct-border');
+                } else if (cb.checked && !q.shuffledAns.includes(idx)) {
+                    cb.parentElement.classList.add('incorrect-border');
+                }
+            });
+            expl.classList.remove('hidden');
+        }
+
+        function prevQuestion() { if(currentIndex > 0) { currentIndex--; renderCurrentQuestion(); } }
+        function nextQuestion() { if(currentIndex < quizData.length - 1) { currentIndex++; renderCurrentQuestion(); } }
+    </script>
+</body>
+</html>
+```eof
