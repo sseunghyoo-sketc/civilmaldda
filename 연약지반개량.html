@@ -9,8 +9,6 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .correct-border { border: 2px solid #22c55e !important; background-color: #f0fdf4; }
         .incorrect-border { border: 2px solid #ef4444 !important; background-color: #fef2f2; }
-        .slide-enter { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-100 h-full overflow-hidden flex items-center justify-center p-2">
@@ -22,14 +20,14 @@
             <h1 class="text-lg font-bold text-gray-800">연약지반/터널 마스터</h1>
         </div>
 
-        <div id="quiz-viewport" class="flex-1 p-5 overflow-y-auto slide-enter">
+        <div id="quiz-viewport" class="flex-1 p-5 overflow-y-auto">
             <div id="start-screen" class="flex flex-col items-center justify-center h-full text-center space-y-6">
                 <div>
                     <div class="text-6xl mb-4">🏔️</div>
                     <h2 class="text-2xl font-bold text-gray-800 mb-1">토목기사 실기 대비</h2>
                     <p class="text-gray-500 text-sm">연약지반/터널 26문제 학습하기</p>
                 </div>
-                <button onclick="startQuiz()" class="w-3/4 bg-indigo-600 text-white py-4 rounded-2xl hover:bg-indigo-700 transition font-bold shadow-lg active:scale-95">퀴즈 시작하기</button>
+                <button onclick="initAndStart()" class="w-3/4 bg-indigo-600 text-white py-4 rounded-2xl hover:bg-indigo-700 transition font-bold shadow-lg active:scale-95">퀴즈 시작하기</button>
                 <p id="daily-quote" class="text-gray-400 italic text-xs font-medium leading-relaxed max-w-[250px]"></p>
             </div>
         </div>
@@ -40,9 +38,7 @@
                     <button onclick="location.reload()" class="text-[10px] text-gray-400 hover:text-indigo-600 font-bold underline transition text-left">처음으로</button>
                     <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
                 </div>
-                
                 <span id="progress" class="text-gray-400 font-bold text-sm">1 / 26</span>
-                
                 <button onclick="nextQuestion()" id="next-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">다음</button>
             </div>
         </div>
@@ -78,32 +74,17 @@
             { id: 26, q: "터널 방재설비 종류 3가지는?", o: ["옥내소화전", "비상조명", "제연설비", "배수설비", "환기"], ans: [0, 1, 2], exp: "옥내소화전, 비상조명, 제연설비" }
         ];
 
-        // 데이터 사전 처리: 옵션 셔플링
-        function shuffle(array) {
-            let curr = array.length, randomIndex;
-            while (curr != 0) {
-                randomIndex = Math.floor(Math.random() * curr);
-                curr--;
-                [array[curr], array[randomIndex]] = [array[randomIndex], array[curr]];
-            }
-            return array;
-        }
+        let currentIndex = 0;
 
-        quizData.forEach(q => {
-            let items = q.o.map((text, idx) => ({ text, isAns: q.ans.includes(idx) }));
-            items = shuffle(items);
-            q.shuffledOptions = items.map(item => item.text);
-            q.shuffledAns = [];
-            items.forEach((item, idx) => { if (item.isAns) q.shuffledAns.push(idx); });
-        });
-
-        window.onload = () => {
-            const quotes = ["정확한 지반 조사가 견고한 구조물을 만듭니다.", "토목의 시작은 땅을 읽는 것에서부터입니다.", "기초가 흔들리면 전체가 무너집니다.", "철저한 시공 관리만이 안전을 보장합니다.", "데이터 기반의 판단이 공학자의 자질입니다."];
-            const quoteEl = document.getElementById('daily-quote');
-            if(quoteEl) quoteEl.innerText = `❝ ${quotes[Math.floor(Math.random() * quotes.length)]} ❞`;
-        };
-
-        function startQuiz() {
+        function initAndStart() {
+            // 데이터 셔플링
+            quizData.forEach(q => {
+                let options = q.o.map((text, idx) => ({ text, isAns: q.ans.includes(idx) }));
+                options.sort(() => Math.random() - 0.5);
+                q.shuffledOptions = options.map(op => op.text);
+                q.shuffledAns = [];
+                options.forEach((op, idx) => { if (op.isAns) q.shuffledAns.push(idx); });
+            });
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('nav-controls').classList.remove('hidden');
             renderCurrentQuestion();
@@ -112,45 +93,43 @@
         function renderCurrentQuestion() {
             const q = quizData[currentIndex];
             const viewport = document.getElementById('quiz-viewport');
+            
+            let html = `<h3 class="text-gray-800 font-bold mb-4 text-base leading-snug">${currentIndex + 1}. ${q.q}</h3>
+                        <div id="options-container" class="space-y-2">`;
+            
+            q.shuffledOptions.forEach((text, idx) => {
+                html += `<label class="flex items-center p-3 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition active:bg-gray-100">
+                            <input type="checkbox" data-idx="${idx}" class="w-5 h-5 text-indigo-600 rounded-md border-gray-300 mr-3">
+                            <span class="text-gray-700 text-sm font-medium">${text}</span>
+                         </label>`;
+            });
+
+            html += `</div>
+                     <button onclick="toggleAnswer()" class="mt-5 w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-bold shadow-md active:scale-95 text-sm">정답 확인</button>
+                     <div id="expl-container" class="hidden mt-4 p-3 bg-indigo-50 text-indigo-900 rounded-xl text-xs border border-indigo-100 leading-relaxed">
+                         <strong>💡 정답 핵심 요약:</strong><br>${q.exp}
+                     </div>`;
+            
+            viewport.innerHTML = html;
             document.getElementById('progress').innerText = `${currentIndex + 1} / ${quizData.length}`;
             document.getElementById('prev-btn').disabled = currentIndex === 0;
             document.getElementById('next-btn').disabled = currentIndex === quizData.length - 1;
-
-            viewport.innerHTML = `
-                <h3 class="text-gray-800 font-bold mb-4 text-base leading-snug">${currentIndex + 1}. ${q.q}</h3>
-                <div id="options-container" class="space-y-2">
-                    ${q.shuffledOptions.map((opt, idx) => `
-                        <label class="flex items-center p-3 rounded-xl border border-gray-100 cursor-pointer hover:bg-gray-50 transition active:bg-gray-100">
-                            <input type="checkbox" data-idx="${idx}" class="w-5 h-5 text-indigo-600 rounded-md border-gray-300 mr-3">
-                            <span class="text-gray-700 text-sm font-medium">${opt}</span>
-                        </label>
-                    `).join('')}
-                </div>
-                <button onclick="toggleAnswer()" class="mt-5 w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-bold shadow-md active:scale-95 text-sm">정답 확인</button>
-                <div id="expl-container" class="hidden mt-4 p-3 bg-indigo-50 text-indigo-900 rounded-xl text-xs border border-indigo-100 leading-relaxed">
-                    <strong>💡 정답 핵심 요약:</strong><br>${q.exp}
-                </div>
-            `;
         }
 
         function toggleAnswer() {
             const q = quizData[currentIndex];
-            const container = document.getElementById('options-container');
-            const checkboxes = container.querySelectorAll('input');
+            const inputs = document.querySelectorAll('#options-container input');
             const expl = document.getElementById('expl-container');
             
-            if (!expl.classList.contains('hidden')) {
-                expl.classList.add('hidden');
-                return;
-            }
+            if (!expl.classList.contains('hidden')) return;
 
-            checkboxes.forEach((cb) => {
-                const idx = parseInt(cb.getAttribute('data-idx'));
-                cb.parentElement.classList.remove('correct-border', 'incorrect-border');
+            inputs.forEach(input => {
+                const idx = parseInt(input.getAttribute('data-idx'));
+                const parent = input.parentElement;
                 if (q.shuffledAns.includes(idx)) {
-                    cb.parentElement.classList.add('correct-border');
-                } else if (cb.checked) {
-                    cb.parentElement.classList.add('incorrect-border');
+                    parent.classList.add('correct-border');
+                } else if (input.checked) {
+                    parent.classList.add('incorrect-border');
                 }
             });
             expl.classList.remove('hidden');
@@ -158,6 +137,11 @@
 
         function prevQuestion() { if(currentIndex > 0) { currentIndex--; renderCurrentQuestion(); } }
         function nextQuestion() { if(currentIndex < quizData.length - 1) { currentIndex++; renderCurrentQuestion(); } }
+        
+        window.onload = () => {
+            const quotes = ["정확한 지반 조사가 견고한 구조물을 만듭니다.", "토목의 시작은 땅을 읽는 것에서부터입니다.", "기초가 흔들리면 전체가 무너집니다.", "철저한 시공 관리만이 안전을 보장합니다.", "데이터 기반의 판단이 공학자의 자질입니다."];
+            document.getElementById('daily-quote').innerText = `❝ ${quotes[Math.floor(Math.random() * quotes.length)]} ❞`;
+        };
     </script>
 </body>
 </html>
