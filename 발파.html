@@ -17,12 +17,13 @@
     
     <div class="w-full max-w-sm h-full max-h-[700px] bg-white rounded-3xl shadow-xl border border-gray-100 flex flex-col overflow-hidden">
         
-        <div class="p-4 text-center border-b border-gray-50">
+        <!-- 홈 버튼이 포함된 헤더 영역 -->
+        <div class="relative p-4 text-center border-b border-gray-50">
+            <a href="index.html" class="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-gray-100 transition">🏠</a>
             <h1 class="text-lg font-bold text-gray-800">토공 및 품질관리 마스터</h1>
         </div>
 
         <div id="quiz-viewport" class="flex-1 p-5 overflow-y-auto slide-enter">
-            <!-- 시작 화면을 Flex로 정중앙 배치 -->
             <div id="start-screen" class="flex flex-col items-center justify-center h-full text-center space-y-6">
                 <div>
                     <div class="text-6xl mb-4">🚜</div>
@@ -36,15 +37,20 @@
 
         <div id="nav-controls" class="hidden p-4 border-t border-gray-100">
             <div class="flex justify-between items-center">
-                <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                <!-- 홈 버튼 및 이전 버튼 영역 -->
+                <div class="flex flex-col gap-1">
+                    <button onclick="location.reload()" class="text-[10px] text-gray-400 hover:text-indigo-600 font-bold underline transition text-left">처음으로</button>
+                    <button onclick="prevQuestion()" id="prev-btn" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">이전</button>
+                </div>
+                
                 <span id="progress" class="text-gray-400 font-bold text-sm">1 / 35</span>
+                
                 <button onclick="nextQuestion()" id="next-btn" class="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm disabled:opacity-30">다음</button>
             </div>
         </div>
     </div>
 
     <script>
-        /* STREAMING_CHUNK:Initialize quiz data... */
         const quizData = [
             { id: 1, q: "발파 시 비산의 원인 3가지는?", o: ["장약과다", "지발시간부적절", "피복불량", "기온높음", "암질연약"], ans: [0, 1, 2], exp: "장약과다, 지발시간부적절, 피복불량" },
             { id: 2, q: "심발공의 종류 4가지는?", o: ["V컷", "피라미드컷", "스윙컷", "상향컷", "심심컷"], ans: [0, 1, 2, 4], exp: "V컷, 피라미드컷, 스윙컷, 심심컷" },
@@ -83,7 +89,6 @@
             { id: 35, q: "교량 내진해석방법 3가지는?", o: ["정적해석", "응답스펙트럼", "시간이력해석", "실험", "육안"], ans: [0, 1, 2], exp: "정적해석, 응답스펙트럼해석, 시간이력해석" }
         ];
 
-        /* STREAMING_CHUNK:Initialize logic... */
         let currentIndex = 0;
         const quotes = [
             "정확한 공정 관리와 품질 기준이 명품 구조물을 만듭니다.",
