@@ -44,20 +44,21 @@
             </a>
         </div>
 
-        <!-- 설정 영역 (각오 및 D-Day) -->
-        <div class="px-6 pb-6">
-            <div class="flex items-center gap-2 mb-2">
-                <input type="text" id="goal-input" oninput="saveData()" placeholder="오늘의 각오 한 줄" class="w-full p-2 text-xs rounded-xl border border-gray-200 bg-white/50 outline-none">
+        <!-- 설정 영역 -->
+        <div class="px-6 pb-6 flex-1">
+            <!-- 시험일 한 줄 배치 -->
+            <div class="flex items-center gap-3 mb-4">
+                <span class="text-xs font-bold text-gray-500 whitespace-nowrap">시험일 설정</span>
+                <input type="date" id="date-input" onchange="saveData()" class="flex-1 p-2 text-xs rounded-xl border border-gray-200 bg-white/50 outline-none">
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold text-gray-500 uppercase">시험일:</span>
-                <input type="date" id="date-input" onchange="saveData()" class="w-full p-2 text-xs rounded-xl border border-gray-200 bg-white/50 outline-none">
-            </div>
-            <div id="d-day-display" class="mt-3 text-center text-indigo-900 font-black text-lg"></div>
+            
+            <!-- D-Day 및 각오 -->
+            <div id="d-day-display" class="text-center text-indigo-900 font-black text-xl mb-2"></div>
+            <input type="text" id="goal-input" oninput="saveData()" placeholder="오늘의 각오 한 줄" class="w-full text-center p-2 text-sm rounded-xl border border-gray-200 bg-white/50 outline-none">
         </div>
 
         <!-- 푸터 -->
-        <div class="p-3 text-center border-t border-white/50">
+        <div class="p-4 text-center border-t border-white/50">
             <p class="text-indigo-400 text-[10px] font-bold">제작자: 국민대불주먹</p>
         </div>
     </div>
@@ -74,11 +75,11 @@
         }
 
         function calculateDDay() {
-            const targetDate = new Date(dateInput.value);
             if (!dateInput.value) {
                 dDayDisplay.innerText = "";
                 return;
             }
+            const targetDate = new Date(dateInput.value);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const diff = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
